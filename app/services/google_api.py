@@ -32,7 +32,7 @@ async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
             'title': FIRST_SHEET_TITLE,
             'gridProperties': {'rowCount': ROW_COUNT,
                                'columnCount': COLUMN_COUNT}
-            }
+        }
         }]
     }
 

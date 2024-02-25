@@ -4,8 +4,6 @@ from aiogoogle import Aiogoogle
 from app.core.constants import GOOGLE_SHEET_MAIN_URL
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.engine.row import Row
-
 
 from app.core.db import get_async_session
 from app.core.google_client import get_service
