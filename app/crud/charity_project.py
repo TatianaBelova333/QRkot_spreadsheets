@@ -2,6 +2,7 @@ from typing import Optional
 
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.engine.row import Row
 
 from app.crud.base import CRUDBase
 from app.models import CharityProject
@@ -50,7 +51,7 @@ class CRUDCharityProject(CRUDBase):
             self,
             session: AsyncSession,
 
-    ) -> list[tuple[str, str, int]]:
+    ) -> list[Row]:
         money_raise_period = (func.extract('epoch', self.model.close_date) -
                               func.extract('epoch', self.model.create_date))
         closed_projects = await session.execute(
@@ -60,6 +61,7 @@ class CRUDCharityProject(CRUDBase):
                 self.model.fully_invested.is_(True)
             ).order_by(money_raise_period)
         )
+        print(type(closed_projects.all()[0]))
         return closed_projects.all()
 
 

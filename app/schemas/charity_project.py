@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, Extra, Field, validator
@@ -54,10 +54,3 @@ class CharityProjectUpdate(CharityProjectBase):
 
     class Config:
         extra = Extra.forbid
-
-
-class CharyProjectReport(BaseModel):
-    name: str
-    description: str
-    period_in_sec: timedelta
-    

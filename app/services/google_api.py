@@ -1,31 +1,44 @@
 from datetime import datetime, timedelta
 
 from aiogoogle import Aiogoogle
-from app.core.config import settings
-from app.schemas import CharyProjectReport
+from sqlalchemy.engine.row import Row
 
-FORMAT = "%Y/%m/%d %H:%M:%S"
+from app.core.config import settings
+from app.core.constants import (COLUMN_COUNT, GOOGLE_SHEETS_NAME,
+                                GOOGLE_SHEET_COLUMNS,
+                                GOOGLE_SHEETS_LOCALE,
+                                GOOGLE_SHEET_RANGE,
+                                GOOGLE_SHEET_TITLE,
+                                ROW_COUNT)
+
+REPORT_NAME = GOOGLE_SHEETS_NAME.format(now=datetime.now())
 
 
 async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
-    now_date_time = datetime.now().strftime(FORMAT)
+    """
+    Create a new Google sheet document and return the document id.
+
+    """
 
     service = await wrapper_services.discover('sheets', 'v4')
 
     spreadsheet_body = {
-        'properties': {'title': f'Отчёт от {now_date_time}',
-                       'locale': 'ru_RU'},
+        'properties': {'title': REPORT_NAME,
+                       'locale': GOOGLE_SHEETS_LOCALE},
         'sheets': [{'properties': {'sheetType': 'GRID',
                                    'sheetId': 0,
                                    'title': 'Лист1',
-                                   'gridProperties': {'rowCount': 100,
-                                                      'columnCount': 11}}}]
+                                   'gridProperties': {
+                                        'rowCount': ROW_COUNT,
+                                        'columnCount': COLUMN_COUNT,
+                                    }}}]
     }
 
     response = await wrapper_services.as_service_account(
         service.spreadsheets.create(json=spreadsheet_body)
     )
     spreadsheetid = response['spreadsheetId']
+
     return spreadsheetid
 
 
@@ -33,36 +46,39 @@ async def set_user_permissions(
         spreadsheetid: str,
         wrapper_services: Aiogoogle
 ) -> None:
-
-    permissions_body = {'type': 'user',
-                        'role': 'writer',
-                        'emailAddress': settings.email}
+    """Set writer permission to access Google sheets documents."""
+    writer_permission = {'type': 'user',
+                         'role': 'writer',
+                         'emailAddress': settings.email}
 
     service = await wrapper_services.discover('drive', 'v3')
 
     await wrapper_services.as_service_account(
         service.permissions.create(
             fileId=spreadsheetid,
-            json=permissions_body,
+            json=writer_permission,
             fields="id"
         ))
 
 
 async def spreadsheets_update_value(
-        spreadsheetid: str,
-        charity_projects: list[CharyProjectReport],
-        wrapper_services: Aiogoogle
+        spreadsheet_id: str,
+        charity_projects: list[Row],
+        wrapper_services: Aiogoogle,
 ) -> None:
-    now_date_time = datetime.now().strftime(FORMAT)
+    """
+    Fill out the specific Google sheet document
+    with the list of closed charity projects ordered by the period of closure
+    in ascending order limited by the ROW_COUNT value.
 
+    """
     service = await wrapper_services.discover('sheets', 'v4')
 
     table_values = [
-        ['Отчёт от', now_date_time],
-        ['Топ проектов по скорости закрытия'],
-        ['Название проекта', 'Время сбора', 'Описание']
+        REPORT_NAME.split(),
+        GOOGLE_SHEET_TITLE,
+        GOOGLE_SHEET_COLUMNS,
     ]
-    row_count = len(table_values) + len(charity_projects)
 
     for project in charity_projects:
 
@@ -75,14 +91,14 @@ async def spreadsheets_update_value(
 
     update_body = {
         'majorDimension': 'ROWS',
-        'values': table_values
+        'values': table_values[:ROW_COUNT]
     }
 
     await wrapper_services.as_service_account(
         service.spreadsheets.values.update(
-            spreadsheetId=spreadsheetid,
-            range=f'A1:C{row_count}',
+            spreadsheetId=spreadsheet_id,
+            range=GOOGLE_SHEET_RANGE,
             valueInputOption='USER_ENTERED',
-            json=update_body
+            json=update_body,
         )
     )

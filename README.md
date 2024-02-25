@@ -39,7 +39,7 @@ http://127.0.0.1:8000/redoc - ReDoc docs.
 
 The following endpoint creates a Google sheet report and returns the link to the Google sheet.
 
-  `GET /google/`
+  `GET /google`
 
 ```
 HTTP/1.1 200 OK
