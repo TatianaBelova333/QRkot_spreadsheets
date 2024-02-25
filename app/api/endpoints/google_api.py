@@ -32,7 +32,7 @@ async def get_report(
     """
     projects: list[Row] = (await
                            charity_project_crud.get_project_by_completion_rate(
-                            session=session,
+                               session=session,
                             ))
     spreadsheet_id = await spreadsheets_create(wrapper_services)
 

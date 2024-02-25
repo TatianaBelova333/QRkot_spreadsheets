@@ -4,7 +4,8 @@ from aiogoogle import Aiogoogle
 from sqlalchemy.engine.row import Row
 
 from app.core.config import settings
-from app.core.constants import (COLUMN_COUNT, GOOGLE_SHEETS_NAME,
+from app.core.constants import (COLUMN_COUNT, FIRST_SHEET_TITLE,
+                                GOOGLE_SHEETS_NAME,
                                 GOOGLE_SHEET_COLUMNS,
                                 GOOGLE_SHEETS_LOCALE,
                                 GOOGLE_SHEET_RANGE,
@@ -25,14 +26,15 @@ async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
     spreadsheet_body = {
         'properties': {'title': REPORT_NAME,
                        'locale': GOOGLE_SHEETS_LOCALE},
-        'sheets': [{'properties': {'sheetType': 'GRID',
-                                   'sheetId': 0,
-                                   'title': 'Лист1',
-                                   'gridProperties': {
-                                        'rowCount': ROW_COUNT,
-                                        'columnCount': COLUMN_COUNT,
-                                    }}}]
-    }
+        'sheets': [{'properties': {
+            'sheetType': 'GRID',
+            'sheetId': 0,
+            'title': FIRST_SHEET_TITLE,
+            'gridProperties': {'rowCount': ROW_COUNT,
+                               'columnCount': COLUMN_COUNT}
+                            }
+                    }]
+                }
 
     response = await wrapper_services.as_service_account(
         service.spreadsheets.create(json=spreadsheet_body)
@@ -86,7 +88,7 @@ async def spreadsheets_update_value(
             project.name,
             str(timedelta(seconds=project.period_in_sec)),
             project.description,
-            ]
+        ]
         table_values.append(new_row)
 
     update_body = {

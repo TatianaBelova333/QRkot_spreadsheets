@@ -11,3 +11,4 @@ ROW_COUNT = 100
 GOOGLE_SHEET_RANGE = f'A1:C{ROW_COUNT}'
 GOOGLE_SHEET_TITLE = ['Топ проектов по скорости закрытия']
 GOOGLE_SHEET_COLUMNS = ['Название проекта', 'Время сбора', 'Описание']
+FIRST_SHEET_TITLE = 'Закрыты проекты'
