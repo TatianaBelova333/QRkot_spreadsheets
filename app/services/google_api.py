@@ -17,10 +17,10 @@ from app.core.constants import (FIRST_SHEET_PROPERTIES,
 REPORT_NAME = GOOGLE_SHEETS_NAME.format(now=datetime.now())
 
 SPREADSHEET_BODY = {
-        'properties': {'title': REPORT_NAME,
-                       'locale': GOOGLE_SHEETS_LOCALE},
-        'sheets': [FIRST_SHEET_PROPERTIES]
-    }
+    'properties': {'title': REPORT_NAME,
+                   'locale': GOOGLE_SHEETS_LOCALE},
+    'sheets': [FIRST_SHEET_PROPERTIES],
+}
 
 
 async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:

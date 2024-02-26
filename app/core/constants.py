@@ -18,12 +18,14 @@ GOOGLE_DRIVE_PERMISSION = {'type': 'user',
                            'role': 'writer',
                            'emailAddress': settings.email}
 FIRST_SHEET_PROPERTIES = {'properties': {
-            'sheetType': 'GRID',
-            'sheetId': 0,
-            'title': FIRST_SHEET_TITLE,
-            'gridProperties': {'rowCount': ROW_COUNT,
-                               'columnCount': COLUMN_COUNT}
-            }
+    'sheetType': 'GRID',
+    'sheetId': 0,
+    'title': FIRST_SHEET_TITLE,
+    'gridProperties': {
+        'rowCount': ROW_COUNT,
+        'columnCount': COLUMN_COUNT
         }
+    }
+}
 GOOGLE_SHEET_DIMENSION = 'ROW'
 SHEET_INPUT_OPTION = 'USER_ENTERED'
