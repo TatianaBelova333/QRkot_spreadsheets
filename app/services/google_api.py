@@ -3,16 +3,24 @@ from datetime import datetime, timedelta
 from aiogoogle import Aiogoogle
 from sqlalchemy.engine.row import Row
 
-from app.core.config import settings
-from app.core.constants import (COLUMN_COUNT, FIRST_SHEET_TITLE,
+from app.core.constants import (FIRST_SHEET_PROPERTIES,
+                                GOOGLE_DRIVE_PERMISSION,
+                                GOOGLE_SHEET_DIMENSION,
                                 GOOGLE_SHEETS_NAME,
                                 GOOGLE_SHEET_COLUMNS,
                                 GOOGLE_SHEETS_LOCALE,
                                 GOOGLE_SHEET_RANGE,
                                 GOOGLE_SHEET_TITLE,
-                                ROW_COUNT)
+                                ROW_COUNT,
+                                SHEET_INPUT_OPTION)
 
 REPORT_NAME = GOOGLE_SHEETS_NAME.format(now=datetime.now())
+
+SPREADSHEET_BODY = {
+        'properties': {'title': REPORT_NAME,
+                       'locale': GOOGLE_SHEETS_LOCALE},
+        'sheets': [FIRST_SHEET_PROPERTIES]
+    }
 
 
 async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
@@ -23,42 +31,26 @@ async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
 
     service = await wrapper_services.discover('sheets', 'v4')
 
-    spreadsheet_body = {
-        'properties': {'title': REPORT_NAME,
-                       'locale': GOOGLE_SHEETS_LOCALE},
-        'sheets': [{'properties': {
-            'sheetType': 'GRID',
-            'sheetId': 0,
-            'title': FIRST_SHEET_TITLE,
-            'gridProperties': {'rowCount': ROW_COUNT,
-                               'columnCount': COLUMN_COUNT}
-        }
-        }]
-    }
-
     response = await wrapper_services.as_service_account(
-        service.spreadsheets.create(json=spreadsheet_body)
+        service.spreadsheets.create(json=SPREADSHEET_BODY)
     )
-    spreadsheetid = response['spreadsheetId']
+    spreadsheet_id = response['spreadsheetId']
 
-    return spreadsheetid
+    return spreadsheet_id
 
 
 async def set_user_permissions(
-        spreadsheetid: str,
+        spreadsheet_id: str,
         wrapper_services: Aiogoogle
 ) -> None:
     """Set writer permission to access Google sheets documents."""
-    writer_permission = {'type': 'user',
-                         'role': 'writer',
-                         'emailAddress': settings.email}
 
     service = await wrapper_services.discover('drive', 'v3')
 
     await wrapper_services.as_service_account(
         service.permissions.create(
-            fileId=spreadsheetid,
-            json=writer_permission,
+            fileId=spreadsheet_id,
+            json=GOOGLE_DRIVE_PERMISSION,
             fields="id"
         ))
 
@@ -92,7 +84,7 @@ async def spreadsheets_update_value(
         table_values.append(new_row)
 
     update_body = {
-        'majorDimension': 'ROWS',
+        'majorDimension': GOOGLE_SHEET_DIMENSION,
         'values': table_values[:ROW_COUNT]
     }
 
@@ -100,7 +92,7 @@ async def spreadsheets_update_value(
         service.spreadsheets.values.update(
             spreadsheetId=spreadsheet_id,
             range=GOOGLE_SHEET_RANGE,
-            valueInputOption='USER_ENTERED',
+            valueInputOption=SHEET_INPUT_OPTION,
             json=update_body,
         )
     )
