@@ -24,8 +24,7 @@ FIRST_SHEET_PROPERTIES = {'properties': {
     'gridProperties': {
         'rowCount': ROW_COUNT,
         'columnCount': COLUMN_COUNT
-        }
     }
-}
+}}
 GOOGLE_SHEET_DIMENSION = 'ROW'
 SHEET_INPUT_OPTION = 'USER_ENTERED'
