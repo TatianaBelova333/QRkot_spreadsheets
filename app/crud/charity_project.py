@@ -61,7 +61,6 @@ class CRUDCharityProject(CRUDBase):
                 self.model.fully_invested.is_(True)
             ).order_by(money_raise_period)
         )
-        print(type(closed_projects.all()[0]))
         return closed_projects.all()
 
 

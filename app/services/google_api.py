@@ -10,17 +10,11 @@ from app.core.constants import (FIRST_SHEET_PROPERTIES,
                                 GOOGLE_SHEET_COLUMNS,
                                 GOOGLE_SHEETS_LOCALE,
                                 GOOGLE_SHEET_RANGE,
+                                GOOGLE_SHEET_SUBTITLE,
                                 GOOGLE_SHEET_TITLE,
+                                REPORT_DATE_FORMAT,
                                 ROW_COUNT,
                                 SHEET_INPUT_OPTION)
-
-REPORT_NAME = GOOGLE_SHEETS_NAME.format(now=datetime.now())
-
-SPREADSHEET_BODY = {
-    'properties': {'title': REPORT_NAME,
-                   'locale': GOOGLE_SHEETS_LOCALE},
-    'sheets': [FIRST_SHEET_PROPERTIES],
-}
 
 
 async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
@@ -28,11 +22,19 @@ async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
     Create a new Google sheet document and return the document id.
 
     """
-
+    report_name = GOOGLE_SHEETS_NAME.format(
+        now=datetime.now(),
+        date_format=REPORT_DATE_FORMAT,
+    )
+    spreadsheet_body = {
+        'properties': {'title': report_name,
+                       'locale': GOOGLE_SHEETS_LOCALE},
+        'sheets': [FIRST_SHEET_PROPERTIES],
+    }
     service = await wrapper_services.discover('sheets', 'v4')
 
     response = await wrapper_services.as_service_account(
-        service.spreadsheets.create(json=SPREADSHEET_BODY)
+        service.spreadsheets.create(json=spreadsheet_body)
     )
     spreadsheet_id = response['spreadsheetId']
 
@@ -68,9 +70,11 @@ async def spreadsheets_update_value(
     """
     service = await wrapper_services.discover('sheets', 'v4')
 
+    now = datetime.now().strftime(REPORT_DATE_FORMAT)
+
     table_values = [
-        REPORT_NAME.split(),
-        GOOGLE_SHEET_TITLE,
+        [GOOGLE_SHEET_TITLE, now],
+        GOOGLE_SHEET_SUBTITLE,
         GOOGLE_SHEET_COLUMNS,
     ]
 
